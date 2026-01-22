@@ -1,12 +1,35 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { BottomNav } from '@/components/BottomNav';
+import { HomeView } from '@/views/HomeView';
+import { TasksView } from '@/views/TasksView';
+import { StatsView } from '@/views/StatsView';
+import { SettingsView } from '@/views/SettingsView';
+import { ViewType } from '@/types';
 
 const Index = () => {
+  const [activeView, setActiveView] = useState<ViewType>('home');
+
+  const renderView = () => {
+    switch (activeView) {
+      case 'home':
+        return <HomeView />;
+      case 'tasks':
+        return <TasksView />;
+      case 'stats':
+        return <StatsView />;
+      case 'settings':
+        return <SettingsView />;
+      default:
+        return <HomeView />;
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="animate-fade-in">
+        {renderView()}
+      </main>
+      <BottomNav activeView={activeView} onViewChange={setActiveView} />
     </div>
   );
 };
