@@ -22,18 +22,22 @@ export function useHabits() {
     setHabits(prev => [...prev, newHabit]);
   }, []);
 
-  const toggleHabit = useCallback((id: string) => {
+  const toggleHabit = useCallback((id: string, direction: 'up' | 'down' = 'up') => {
     setHabits(prev => prev.map(habit => {
       if (habit.id === id) {
-        if (habit.targetCount) {
-          const newCount = (habit.currentCount || 0) + 1;
+        if (habit.targetCount !== undefined) {
+          const current = habit.currentCount || 0;
+          const newCount = direction === 'up'
+            ? Math.min(current + 1, habit.targetCount)
+            : Math.max(current - 1, 0);
+
           return {
             ...habit,
-            currentCount: newCount >= habit.targetCount ? habit.targetCount : newCount,
+            currentCount: newCount,
             isCompleted: newCount >= habit.targetCount,
           };
         }
-        return { ...habit, isCompleted: !habit.isCompleted };
+        return { ...habit, isCompleted: direction === 'up' ? !habit.isCompleted : false };
       }
       return habit;
     }));
@@ -43,9 +47,15 @@ export function useHabits() {
     setHabits(prev => prev.filter(h => h.id !== id));
   }, []);
 
-  const completedCount = habits.filter(h => h.isCompleted).length;
-  const totalCount = habits.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const totalPossibleTicks = habits.reduce((acc, h) => acc + (h.targetCount || 1), 0);
+  const currentTicks = habits.reduce((acc, h) => {
+    if (h.targetCount !== undefined) return acc + (h.currentCount || 0);
+    return acc + (h.isCompleted ? 1 : 0);
+  }, 0);
 
-  return { habits, addHabit, toggleHabit, deleteHabit, completedCount, totalCount, progressPercent };
+  const progressPercent = totalPossibleTicks > 0
+    ? Math.round((currentTicks / totalPossibleTicks) * 100)
+    : 0;
+
+  return { habits, addHabit, toggleHabit, deleteHabit, progressPercent, currentTicks, totalPossibleTicks };
 }

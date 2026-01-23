@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 interface ProgressBarProps {
   percent: number;
@@ -6,17 +7,21 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ percent, className }: ProgressBarProps) {
+  const [displayPercent, setDisplayPercent] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDisplayPercent(percent);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [percent]);
+
   return (
-    <div className={cn("w-full", className)}>
-      <div className="h-4 bg-secondary rounded-full overflow-hidden border-2 border-success/30">
-        <div 
-          className="h-full bg-success rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      <p className="text-right text-sm text-muted-foreground mt-2">
-        {percent}% achieved
-      </p>
+    <div className={cn("w-full bg-secondary/50 rounded-full h-3 overflow-hidden", className)}>
+      <div
+        className="h-full bg-primary transition-all duration-1000 ease-out"
+        style={{ width: `${displayPercent}%` }}
+      />
     </div>
   );
 }

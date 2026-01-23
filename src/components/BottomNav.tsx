@@ -26,8 +26,8 @@ export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
               onClick={() => onViewChange(id)}
               className={cn(
                 "flex flex-col items-center gap-1 p-3 rounded-xl transition-all duration-300 touch-feedback",
-                isActive 
-                  ? "bg-primary/20 text-primary" 
+                isActive
+                  ? "bg-primary/20 text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
