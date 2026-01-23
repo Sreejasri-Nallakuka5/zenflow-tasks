@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Star, ShoppingCart, Home, Briefcase, Heart, Activity, DollarSign, Gamepad2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Star, ShoppingCart, Home, Briefcase, Heart, Activity, DollarSign, Gamepad2, X } from 'lucide-react';
 import { TaskItem } from '@/components/TaskItem';
 import { AddButton } from '@/components/AddButton';
 import { AddTaskModal } from '@/components/AddTaskModal';
@@ -32,6 +32,8 @@ export function TasksView() {
     categories.map(c => c.id)
   );
   const [isTodaySectionExpanded, setIsTodaySectionExpanded] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
 
   const toggleCategory = (categoryId: string) => {
     setSelectedCategories(prev =>
@@ -47,6 +49,21 @@ export function TasksView() {
 
   const handleApplyFilters = () => {
     setShowCategoryFilter(false);
+  };
+
+  const toggleTaskSelection = (taskId: string) => {
+    setSelectedTasks(prev =>
+      prev.includes(taskId)
+        ? prev.filter(id => id !== taskId)
+        : [...prev, taskId]
+    );
+  };
+
+  const handleEditToggle = () => {
+    setIsEditMode(!isEditMode);
+    if (isEditMode) {
+      setSelectedTasks([]);
+    }
   };
 
   // Filter tasks by selected categories
@@ -72,24 +89,34 @@ export function TasksView() {
               showCategoryFilter && "rotate-180"
             )} />
           </button>
-          <button className="text-foreground font-medium">Edit</button>
+          <button
+            onClick={handleEditToggle}
+            className="text-foreground font-medium touch-feedback"
+          >
+            {isEditMode ? 'Done' : 'Edit'}
+          </button>
         </div>
 
-        {/* Category Filter Dropdown */}
+        {/* Category Filter Popup */}
         {showCategoryFilter && (
-          <div className="fixed inset-0 bg-background/95 z-50 animate-fade-in">
-            <div className="p-4 safe-area-top">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-semibold">Filter by Category</h2>
-                <button
-                  onClick={() => setShowCategoryFilter(false)}
-                  className="text-muted-foreground"
-                >
-                  ✕
-                </button>
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end animate-fade-in" onClick={() => setShowCategoryFilter(false)}>
+            <div
+              className="bg-background rounded-t-3xl w-full max-h-[80vh] flex flex-col animate-slide-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-4 border-b border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-2xl font-semibold">Filter by Category</h2>
+                  <button
+                    onClick={() => setShowCategoryFilter(false)}
+                    className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center touch-feedback"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-2 mb-6">
+              <div className="overflow-y-auto flex-1 p-4 space-y-2">
                 {categories.map((category) => {
                   const Icon = category.icon;
                   const isSelected = selectedCategories.includes(category.id);
@@ -127,7 +154,7 @@ export function TasksView() {
                 })}
               </div>
 
-              <div className="flex gap-3">
+              <div className="p-4 border-t border-border flex gap-3">
                 <button
                   onClick={deselectAll}
                   className="flex-1 py-3 rounded-xl bg-secondary text-foreground font-medium touch-feedback"
@@ -180,11 +207,35 @@ export function TasksView() {
         {isTodaySectionExpanded && (
           <div className="stagger-children animate-slide-down">
             {categoryFilteredTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={toggleTask}
-              />
+              isEditMode ? (
+                <div key={task.id} className="flex items-center gap-4 py-3">
+                  <div
+                    onClick={() => toggleTaskSelection(task.id)}
+                    className={cn(
+                      "w-6 h-6 rounded flex items-center justify-center border-2 transition-all touch-feedback",
+                      selectedTasks.includes(task.id)
+                        ? "bg-primary border-primary"
+                        : "border-muted-foreground/30"
+                    )}
+                  >
+                    {selectedTasks.includes(task.id) && (
+                      <svg className="w-4 h-4 text-primary-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="flex-1 font-medium">{task.title}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : ''}
+                  </span>
+                </div>
+              ) : (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onToggle={toggleTask}
+                />
+              )
             ))}
           </div>
         )}

@@ -269,3 +269,14 @@
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}

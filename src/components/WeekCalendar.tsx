@@ -76,7 +76,10 @@ export function WeekCalendar({ selectedDate, onDateSelect }: WeekCalendarProps) 
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
+            touchAction: 'pan-x',
+            overscrollBehavior: 'contain',
           }}
+          onTouchStart={(e) => e.stopPropagation()}
         >
           <div className="flex gap-6">
             {daysByMonth.map(({ month, days }) => (
