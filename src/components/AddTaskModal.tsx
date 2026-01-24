@@ -64,13 +64,13 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
   const priorities: Priority[] = ['None', 'Low', 'Medium', 'High'];
 
   return (
-    <div className="fixed inset-0 bg-background z-50 animate-slide-up overflow-y-auto">
+    <div className="fixed inset-0 bg-background z-[100] animate-slide-up overflow-y-auto">
       <div className="safe-area-top p-6 min-h-screen flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={onClose}
-            className="text-primary font-bold text-lg touch-feedback"
+            className="text-foreground font-bold text-lg touch-feedback"
           >
             Cancel
           </button>
