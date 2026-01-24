@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { format, startOfWeek, addDays, isSameDay, isToday, addWeeks, startOfDay } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WeekCalendarProps {
@@ -10,69 +9,41 @@ interface WeekCalendarProps {
 }
 
 export function WeekCalendar({ selectedDate, onDateSelect }: WeekCalendarProps) {
+  // Use Embla with dragFree: false for week-by-week snapping
+  // Added watchDrag and duration for better responsiveness
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     dragFree: false,
-    containScroll: 'trimSnaps'
+    containScroll: 'trimSnaps',
+    startIndex: 26,
+    watchDrag: true,
+    duration: 30
   });
 
   const baseDate = startOfDay(new Date());
+  // Pre-calculate weeks for the carousel
   const weeks = Array.from({ length: 52 }, (_, i) => {
     const weekStart = addWeeks(startOfWeek(baseDate, { weekStartsOn: 1 }), i - 26);
     return Array.from({ length: 7 }, (_, d) => addDays(weekStart, d));
   });
 
-  const [currentIndex, setCurrentIndex] = useState(26);
-
-  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
-
   useEffect(() => {
     if (!emblaApi) return;
-    emblaApi.on('select', () => {
-      setCurrentIndex(emblaApi.selectedScrollSnap());
-    });
-    emblaApi.scrollTo(26, true);
-  }, [emblaApi]);
 
-  useEffect(() => {
-    if (!emblaApi) return;
+    // Auto-scroll to the week containing the selectedDate if changed externally
     const weekOfSelected = weeks.findIndex(week =>
       week.some(day => isSameDay(day, selectedDate))
     );
-    if (weekOfSelected !== -1 && weekOfSelected !== currentIndex) {
+    if (weekOfSelected !== -1 && weekOfSelected !== emblaApi.selectedScrollSnap()) {
       emblaApi.scrollTo(weekOfSelected);
     }
-  }, [selectedDate, emblaApi, weeks, currentIndex]);
-
-  const displayTitle = isToday(selectedDate)
-    ? "Today"
-    : format(selectedDate, 'EEEE, d MMMM');
+  }, [selectedDate, emblaApi, weeks]);
 
   return (
-    <div className="bg-background sticky top-0 z-40 pb-2 pt-4 px-4 border-b border-border/10">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-handwritten font-bold text-foreground">
-          {displayTitle}
-        </h1>
-        <div className="flex gap-2">
-          <button
-            onClick={scrollPrev}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary transition-all active:scale-95"
-          >
-            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <button
-            onClick={scrollNext}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary transition-all active:scale-95"
-          >
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-      </div>
-
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
+    <div className="bg-background pb-4 px-2 overflow-hidden select-none touch-none">
+      {/* Carousel Container */}
+      <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
+        <div className="flex touch-pan-y">
           {weeks.map((week, weekIdx) => (
             <div key={weekIdx} className="flex-[0_0_100%] flex justify-between gap-1 px-1">
               {week.map((day) => {
@@ -84,7 +55,8 @@ export function WeekCalendar({ selectedDate, onDateSelect }: WeekCalendarProps) 
                     key={day.toISOString()}
                     onClick={() => onDateSelect(day)}
                     className={cn(
-                      "flex flex-col items-center py-2 px-1 rounded-2xl transition-all duration-300 min-w-[40px] relative"
+                      "flex flex-col items-center py-2 px-1 rounded-2xl transition-all duration-300 min-w-[42px] relative touch-feedback",
+                      isSelected && "scale-105"
                     )}
                   >
                     <span className={cn(
@@ -101,7 +73,7 @@ export function WeekCalendar({ selectedDate, onDateSelect }: WeekCalendarProps) 
                       {format(day, 'd')}
                     </div>
                     {isSelected && (
-                      <div className="absolute top-[28px] w-10 h-10 border-2 border-primary/60 rounded-full -rotate-[12deg] skew-x-[-10deg] animate-scale-in" />
+                      <div className="absolute top-[28px] w-11 h-11 border-[2.5px] border-primary/40 rounded-full -rotate-[15deg] skew-x-[-12deg] animate-scale-in" />
                     )}
                   </button>
                 );

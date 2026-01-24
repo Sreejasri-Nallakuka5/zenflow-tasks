@@ -35,12 +35,12 @@ export function StatsView() {
   const overallRate = 44.9;
 
   return (
-    <div className="min-h-screen pb-32 bg-background flex flex-col items-center p-6 pt-12 overflow-y-auto">
+    <div className="h-full pb-32 bg-background flex flex-col items-center p-6 pt-12 overflow-y-auto overflow-x-hidden">
       {/* Overall Rate Gauge */}
-      <Gauge percent={overallRate} className="mb-12" />
+      <Gauge percent={overallRate} className="mb-12 flex-shrink-0" />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-1 w-full mb-12">
+      <div className="grid grid-cols-3 gap-1 w-full mb-12 flex-shrink-0">
         <StatsCard value={1} label="Streak days" icon={<Check className="w-3 h-3 text-primary" />} />
         <div className="w-px h-10 bg-border/30 self-center justify-self-center" />
         <StatsCard value={1} label="Perfect days" icon={<Award className="w-3 h-3 text-primary" />} />
@@ -48,7 +48,7 @@ export function StatsView() {
         <StatsCard value={3} label="Active days" icon={<div className="w-3 h-3 bg-primary rounded-sm" />} />
       </div>
 
-      <div className="w-full bg-card/30 rounded-[2.5rem] p-6 border border-border/20">
+      <div className="w-full bg-card/30 rounded-[2.5rem] p-6 border border-border/20 flex-shrink-0 mb-8">
         {/* Tab Switch */}
         <div className="flex items-center gap-6 mb-8 border-b border-border/10 pb-4">
           <button
@@ -81,14 +81,14 @@ export function StatsView() {
           <div className="animate-fade-in">
             {/* Calendar Controls */}
             <div className="flex items-center justify-between mb-8 px-2">
-              <button onClick={prevMonth} className="p-2 bg-secondary/50 rounded-full">
-                <ChevronLeft className="w-5 h-5" />
+              <button onClick={prevMonth} className="p-2 bg-secondary/50 rounded-full active:scale-95 transition-all">
+                <ChevronLeft className="w-5 h-5 text-muted-foreground" />
               </button>
               <h2 className="text-xl font-bold">
                 {format(currentMonth, 'MMMM')}
               </h2>
-              <button onClick={nextMonth} className="p-2 bg-secondary/50 rounded-full">
-                <ChevronRight className="w-5 h-5" />
+              <button onClick={nextMonth} className="p-2 bg-secondary/50 rounded-full active:scale-95 transition-all">
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
@@ -138,7 +138,6 @@ export function StatsView() {
                     )}>
                       {isPerfect ? (
                         <div className="relative group touch-feedback">
-                          {/* Paw Badge SVG */}
                           <svg className="w-9 h-9 text-primary animate-scale-in" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2M6 6C7.1 6 8 6.9 8 8C8 9.1 7.1 10 6 10C4.9 10 4 9.1 4 8C4 6.9 4.9 6 6 6M18 6C19.1 6 20 6.9 20 8C20 9.1 19.1 10 18 10C16.9 10 16 9.1 16 8C16 6.9 16.9 6 18 6M7 16C7 14.3 8.3 13 10 13H14C15.7 13 17 14.3 17 16V18C17 19.7 15.7 21 14 21H10C8.3 21 7 19.7 7 18V16Z" opacity="0.8" />
                           </svg>

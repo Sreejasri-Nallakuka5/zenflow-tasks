@@ -25,8 +25,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <main className="animate-fade-in">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+      <main className="flex-1 relative overflow-hidden">
         {renderView()}
       </main>
       <BottomNav activeView={activeView} onViewChange={setActiveView} />
