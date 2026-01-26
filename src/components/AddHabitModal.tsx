@@ -20,6 +20,10 @@ const categories: Category[] = [
   { id: '6', name: 'Better Sleep', color: 'purple', description: 'Get better sleep to wake up feeling your best.' },
   { id: '7', name: 'Social Health', color: 'pink', description: 'Make friends who inspire and support you.' },
   { id: '8', name: 'Household Chores', color: 'orange', description: 'Keep your living space clean and organized.' },
+  { id: '9', name: 'Personal Growth', color: 'cyan', description: 'Invest in yourself to reach your full potential.' },
+  { id: '10', name: 'Productivity', color: 'purple', description: 'Boost your efficiency and get more done.' },
+  { id: '11', name: 'Sports', color: 'orange', description: 'Stay active and energized with sports.' },
+  { id: '12', name: 'Personal Finance', color: 'green', description: 'Manage your money and build wealth.' },
 ];
 
 const habitsByCategory: Record<string, { emoji: string; title: string }[]> = {
@@ -105,6 +109,38 @@ const habitsByCategory: Record<string, { emoji: string; title: string }[]> = {
     { emoji: '🚶', title: 'Go for a walk' },
     { emoji: '🧘', title: 'Meditate for 10 minutes' },
   ],
+  'Personal Growth': [
+    { emoji: '📚', title: 'Read for 30 minutes' },
+    { emoji: '🧠', title: 'Learn a new skill' },
+    { emoji: '🎧', title: 'Listen to a podcast' },
+    { emoji: '✍️', title: 'Journaling' },
+    { emoji: '🎨', title: 'Practice a hobby' },
+    { emoji: '🚀', title: 'Work on side project' },
+  ],
+  'Productivity': [
+    { emoji: '📥', title: 'Clear inbox' },
+    { emoji: '📝', title: 'Plan tomorrow' },
+    { emoji: '⚡', title: 'Deep work session' },
+    { emoji: '🎯', title: 'Review goals' },
+    { emoji: '🧹', title: 'Clean workspace' },
+    { emoji: '📵', title: 'Focus time' },
+  ],
+  'Sports': [
+    { emoji: '💪', title: 'Gym workout' },
+    { emoji: '🏃', title: 'Running' },
+    { emoji: '🧘', title: 'Yoga session' },
+    { emoji: '🏊', title: 'Swimming' },
+    { emoji: '🏀', title: 'Team sport' },
+    { emoji: '🚲', title: 'Cycling' },
+  ],
+  'Personal Finance': [
+    { emoji: '📊', title: 'Track expenses' },
+    { emoji: '💰', title: 'Review budget' },
+    { emoji: '🛑', title: 'No spend day' },
+    { emoji: '🏦', title: 'Save money' },
+    { emoji: '📈', title: 'Check investments' },
+    { emoji: '🎓', title: 'Read finance news' },
+  ],
 };
 
 const categoryImages: Record<string, string> = {
@@ -113,6 +149,10 @@ const categoryImages: Record<string, string> = {
   'Mental Health': '/assets/habits/mental_health.jpg',
   'Better Sleep': '/assets/habits/better_sleep.png',
   'Social Health': '/assets/habits/social_health.jpg',
+  'Personal Growth': '/assets/habits/personal_growth.jpg',
+  'Productivity': '/assets/habits/productivity.jpg',
+  'Sports': '/assets/habits/sports.jpg',
+  'Personal Finance': '/assets/habits/personal_finance.jpg',
 };
 
 const categoryThemeColors: Record<string, string> = {
@@ -121,6 +161,13 @@ const categoryThemeColors: Record<string, string> = {
   'Mental Health': 'border-yellow-400',
   'Better Sleep': 'border-blue-300',
   'Social Health': 'border-purple-400',
+  'Personal Growth': 'border-cyan-400',
+  'Productivity': 'border-purple-500',
+  'Sports': 'border-orange-400',
+  'Personal Finance': 'border-green-400',
+  'Smart Habits': 'border-emerald-400',
+  'Popular Habits': 'border-pink-500',
+  'Household Chores': 'border-orange-300',
 };
 
 export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProps) {
@@ -149,7 +196,7 @@ export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProp
 
   const habits = selectedCategory ? habitsByCategory[selectedCategory.name] || [] : [];
   const categoryImage = selectedCategory ? categoryImages[selectedCategory.name] : null;
-  const themeColor = selectedCategory ? categoryThemeColors[selectedCategory.name] : '';
+  const themeColor = selectedCategory ? (categoryThemeColors[selectedCategory.name] || '') : '';
 
   return (
     <div className="fixed inset-0 bg-background z-[100] animate-slide-up overflow-y-auto">

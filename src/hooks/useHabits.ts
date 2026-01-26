@@ -1,54 +1,98 @@
-import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Habit } from '@/types';
-
-const defaultHabits: Habit[] = [
-  { id: '1', title: 'Drink 8 glasses of water', emoji: '💧', category: 'Health & Wellness', targetCount: 8, currentCount: 3, isCompleted: false, createdAt: new Date() },
-  { id: '2', title: 'Exercise for 30 minutes', emoji: '🏃', category: 'Health & Wellness', isCompleted: false, createdAt: new Date() },
-  { id: '3', title: 'Take a shower', emoji: '🚿', category: 'Morning Routine', targetCount: 2, currentCount: 0, isCompleted: false, createdAt: new Date() },
-  { id: '4', title: 'Plan for tomorrow', emoji: '📝', category: 'Productivity', isCompleted: false, createdAt: new Date() },
-];
+// import { toast } from '@/components/ui/use-toast'; // Assuming you have a toast component
 
 export function useHabits() {
-  const [habits, setHabits] = useState<Habit[]>(defaultHabits);
+  const queryClient = useQueryClient();
 
-  const addHabit = useCallback((habit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount'>) => {
-    const newHabit: Habit = {
-      ...habit,
-      id: Date.now().toString(),
-      isCompleted: false,
-      currentCount: 0,
-      createdAt: new Date(),
-    };
-    setHabits(prev => [...prev, newHabit]);
-  }, []);
+  const { data: habits = [] } = useQuery({
+    queryKey: ['habits'],
+    queryFn: async () => {
+      const res = await fetch('/api/habits');
+      if (!res.ok) throw new Error('Failed to fetch habits');
+      return res.json();
+    },
+  });
 
-  const toggleHabit = useCallback((id: string, direction: 'up' | 'down' = 'up') => {
-    setHabits(prev => prev.map(habit => {
-      if (habit.id === id) {
-        if (habit.targetCount !== undefined) {
-          const current = habit.currentCount || 0;
-          const newCount = direction === 'up'
-            ? Math.min(current + 1, habit.targetCount)
-            : Math.max(current - 1, 0);
+  const addHabitMutation = useMutation({
+    mutationFn: async (newHabit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount'>) => {
+      const res = await fetch('/api/habits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newHabit),
+      });
+      if (!res.ok) throw new Error('Failed to add habit');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      // toast({ title: "Habit added successfully" });
+    },
+  });
 
-          return {
-            ...habit,
-            currentCount: newCount,
-            isCompleted: newCount >= habit.targetCount,
-          };
-        }
-        return { ...habit, isCompleted: direction === 'up' ? !habit.isCompleted : false };
+  const toggleHabitMutation = useMutation({
+    mutationFn: async ({ id, direction }: { id: string; direction: 'up' | 'down' }) => {
+      // Optimistic update logic is complex here without endpoint refactor, 
+      // but we can try to reuse existing endpoint if it supports partial updates or creating a specific toggle endpoint.
+      // For now, let's assume updateHabit endpoint handles the logic or we calculate new values client side and send them.
+      // However, the backend updateHabit logic seems to just take fields.
+      // Let's implement a basic client-side calculation and send the update to the server.
+      const habit = habits.find((h: Habit) => h.id === id);
+      if (!habit) throw new Error("Habit not found");
+
+      let updates = {};
+      if (habit.targetCount !== undefined) {
+        const current = habit.currentCount || 0;
+        const newCount = direction === 'up'
+          ? Math.min(current + 1, habit.targetCount)
+          : Math.max(current - 1, 0);
+        updates = { currentCount: newCount, isCompleted: newCount >= habit.targetCount };
+      } else {
+        updates = { isCompleted: direction === 'up' ? !habit.isCompleted : false };
       }
-      return habit;
-    }));
-  }, []);
 
-  const deleteHabit = useCallback((id: string) => {
-    setHabits(prev => prev.filter(h => h.id !== id));
-  }, []);
+      const res = await fetch(`/api/habits/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error('Failed to update habit');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    },
+  });
 
-  const totalPossibleTicks = habits.reduce((acc, h) => acc + (h.targetCount || 1), 0);
-  const currentTicks = habits.reduce((acc, h) => {
+  const deleteHabitMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/habits/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete habit');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    },
+  });
+
+
+  const addHabit = (habit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount'>) => {
+    addHabitMutation.mutate(habit);
+  };
+
+  const toggleHabit = (id: string, direction: 'up' | 'down' = 'up') => {
+    toggleHabitMutation.mutate({ id, direction });
+  };
+
+  const deleteHabit = (id: string) => {
+    deleteHabitMutation.mutate(id);
+  };
+
+  const totalPossibleTicks = habits.reduce((acc: number, h: Habit) => acc + (h.targetCount || 1), 0);
+  const currentTicks = habits.reduce((acc: number, h: Habit) => {
     if (h.targetCount !== undefined) return acc + (h.currentCount || 0);
     return acc + (h.isCompleted ? 1 : 0);
   }, 0);
