@@ -49,6 +49,16 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    setTitle('');
+    setReminder('Not set');
+    setAutoPostpone(false);
+    setPriority('None');
+    setCategory('None');
+    setSubtasks([]);
+    onClose();
+  };
+
   const handleSubmit = () => {
     if (title.trim()) {
       onAddTask(title.trim(), new Date(), {
@@ -56,16 +66,9 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
         autoPostpone,
         priority,
         category,
-        subtasks
+        subtasks: subtasks.map(s => ({ title: s, isCompleted: false }))
       });
-      // Reset
-      setTitle('');
-      setReminder('Not set');
-      setAutoPostpone(false);
-      setPriority('None');
-      setCategory('None');
-      setSubtasks([]);
-      onClose();
+      handleClose();
     }
   };
 
@@ -88,7 +91,7 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-foreground font-bold text-lg touch-feedback"
           >
             Cancel

@@ -22,8 +22,17 @@ export function TaskItem({ task, onToggle }: TaskItemProps) {
     <>
       <div
         className="flex items-center gap-4 py-3 animate-slide-up touch-feedback select-none"
-        onClick={() => onToggle(task.id)}
-        {...longPressProps}
+        onClick={() => {
+          if (!longPressProps.isLongPress()) {
+            onToggle(task.id);
+          }
+        }}
+        onMouseDown={longPressProps.onMouseDown}
+        onMouseUp={longPressProps.onMouseUp}
+        onMouseLeave={longPressProps.onMouseLeave}
+        onTouchStart={longPressProps.onTouchStart}
+        onTouchEnd={longPressProps.onTouchEnd}
+        onTouchMove={longPressProps.onTouchMove}
       >
         <div className={cn(
           "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300",

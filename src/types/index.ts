@@ -15,6 +15,11 @@ export interface Task {
   title: string;
   isCompleted: boolean;
   dueDate?: Date;
+  priority?: string;
+  category?: string;
+  reminder?: string;
+  autoPostpone?: boolean;
+  subtasks?: { title: string; isCompleted: boolean }[];
   createdAt: Date;
 }
 

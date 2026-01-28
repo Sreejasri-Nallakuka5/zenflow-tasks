@@ -22,11 +22,13 @@ export function HabitItem({ habit, onToggle }: HabitItemProps) {
   });
 
   const handleIncrement = (e: React.MouseEvent | React.TouchEvent) => {
+    if (longPressProps.isLongPress()) return;
     e.stopPropagation();
     onToggle(habit.id, 'up');
   };
 
   const handleDecrement = (e: React.MouseEvent | React.TouchEvent) => {
+    if (longPressProps.isLongPress()) return;
     e.stopPropagation();
     if (hasCounter && (habit.currentCount || 0) > 0) {
       onToggle(habit.id, 'down');
@@ -40,7 +42,12 @@ export function HabitItem({ habit, onToggle }: HabitItemProps) {
       <div
         className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border/50 animate-slide-up touch-feedback select-none"
         onClick={handleIncrement}
-        {...longPressProps}
+        onMouseDown={longPressProps.onMouseDown}
+        onMouseUp={longPressProps.onMouseUp}
+        onMouseLeave={longPressProps.onMouseLeave}
+        onTouchStart={longPressProps.onTouchStart}
+        onTouchEnd={longPressProps.onTouchEnd}
+        onTouchMove={longPressProps.onTouchMove}
       >
         <div className="flex items-center gap-3">
           <span className="text-xl">{habit.emoji}</span>
