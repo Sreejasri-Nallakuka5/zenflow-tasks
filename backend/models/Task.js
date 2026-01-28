@@ -12,6 +12,27 @@ const taskSchema = new mongoose.Schema({
     dueDate: {
         type: Date,
     },
+    priority: {
+        type: String,
+        enum: ['None', 'Low', 'Medium', 'High'],
+        default: 'None',
+    },
+    category: {
+        type: String,
+        default: 'None',
+    },
+    reminder: {
+        type: String, // Storing time as string for simplicity
+        default: 'Not set',
+    },
+    autoPostpone: {
+        type: Boolean,
+        default: false,
+    },
+    subtasks: [{
+        title: String,
+        isCompleted: { type: Boolean, default: false }
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

@@ -6,7 +6,10 @@ import { NotesView } from '@/components/NotesView';
 import { cn } from '@/lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, getDay, isSameDay } from 'date-fns';
 
+import { useLanguage } from '@/contexts/LanguageContext';
+
 export function StatsView() {
+  const { t } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'activity' | 'notes'>('activity');
 
@@ -41,11 +44,11 @@ export function StatsView() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1 w-full mb-12 flex-shrink-0">
-        <StatsCard value={1} label="Streak days" icon={<Check className="w-3 h-3 text-primary" />} />
+        <StatsCard value={1} label={t('streak_days')} icon={<Check className="w-3 h-3 text-primary" />} />
         <div className="w-px h-10 bg-border/30 self-center justify-self-center" />
-        <StatsCard value={1} label="Perfect days" icon={<Award className="w-3 h-3 text-primary" />} />
+        <StatsCard value={1} label={t('perfect_days')} icon={<Award className="w-3 h-3 text-primary" />} />
         <div className="w-px h-10 bg-border/30 self-center justify-self-center" />
-        <StatsCard value={3} label="Active days" icon={<div className="w-3 h-3 bg-primary rounded-sm" />} />
+        <StatsCard value={3} label={t('active_days')} icon={<div className="w-3 h-3 bg-primary rounded-sm" />} />
       </div>
 
       <div className="w-full bg-card/30 rounded-[2.5rem] p-6 border border-border/20 flex-shrink-0 mb-8">
@@ -58,7 +61,7 @@ export function StatsView() {
               activeTab === 'activity' ? "text-foreground" : "text-muted-foreground/40"
             )}
           >
-            Activity
+            {t('activity')}
             {activeTab === 'activity' && (
               <div className="absolute -bottom-4 left-0 right-0 h-1 bg-primary rounded-full" />
             )}
@@ -70,7 +73,7 @@ export function StatsView() {
               activeTab === 'notes' ? "text-foreground" : "text-muted-foreground/40"
             )}
           >
-            Notes
+            {t('notes_tab')}
             {activeTab === 'notes' && (
               <div className="absolute -bottom-4 left-0 right-0 h-1 bg-primary rounded-full" />
             )}
@@ -94,7 +97,7 @@ export function StatsView() {
 
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-y-6">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+              {[t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat'), t('sun')].map(day => (
                 <div key={day} className="text-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">
                   {day}
                 </div>

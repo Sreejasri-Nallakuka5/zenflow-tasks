@@ -6,6 +6,7 @@ export interface Habit {
   targetCount?: number;
   currentCount?: number;
   isCompleted: boolean;
+  status: 'active' | 'stopped';
   createdAt: Date;
 }
 
@@ -20,7 +21,7 @@ export interface Task {
 export interface Category {
   id: string;
   name: string;
-  color: 'green' | 'pink' | 'cyan' | 'coral' | 'yellow' | 'orange' | 'purple';
+  color: 'green' | 'pink' | 'cyan' | 'coral' | 'yellow' | 'orange' | 'purple' | 'blue' | 'lime' | 'grey';
   description: string;
 }
 

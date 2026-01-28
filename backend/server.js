@@ -13,9 +13,27 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
+const connectDB = async () => {
+    try {
+        console.log('Connecting to MongoDB...');
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            socketTimeoutMS: 45000,
+        });
+        console.log('MongoDB Connected Successfully');
+    } catch (err) {
+        console.error('MongoDB connection error details:');
+        console.error('Code:', err.code);
+        console.error('Syscall:', err.syscall);
+        console.error('Hostname:', err.hostname);
+        console.error('Message:', err.message);
+        console.log('\nTIP: If you see ECONNREFUSED for an SRV record, it might be a DNS issue.');
+        console.log('Try using the standard connection string (non-SRV) from MongoDB Atlas.');
+        process.exit(1);
+    }
+};
+
+connectDB();
 
 // Routes
 const habitRoutes = require('./routes/habitRoutes');

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export interface Note {
     id: string;
@@ -9,71 +10,64 @@ export interface Note {
     updatedAt: Date;
 }
 
-const NOTES_STORAGE_KEY = 'zenflow-notes';
-
 export function useNotes() {
-    const [notes, setNotes] = useState<Note[]>([]);
+    const queryClient = useQueryClient();
 
-    // Load notes from localStorage on mount
-    useEffect(() => {
-        const stored = localStorage.getItem(NOTES_STORAGE_KEY);
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                // Convert date strings back to Date objects
-                const notesWithDates = parsed.map((note: any) => ({
-                    ...note,
-                    createdAt: new Date(note.createdAt),
-                    updatedAt: new Date(note.updatedAt),
-                }));
-                setNotes(notesWithDates);
-            } catch (error) {
-                console.error('Failed to parse notes from localStorage:', error);
-            }
-        }
-    }, []);
+    const { data: notes = [] } = useQuery({
+        queryKey: ['notes'],
+        queryFn: async () => {
+            const res = await fetch('/api/notes');
+            if (!res.ok) throw new Error('Failed to fetch notes');
+            const data = await res.json();
+            return data.map((note: any) => ({
+                ...note,
+                createdAt: new Date(note.createdAt),
+                updatedAt: new Date(note.updatedAt),
+            }));
+        },
+    });
 
-    // Save notes to localStorage whenever they change
-    const saveNotes = (updatedNotes: Note[]) => {
-        setNotes(updatedNotes);
-        localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(updatedNotes));
-    };
+    const saveNoteMutation = useMutation({
+        mutationFn: async ({ date, content }: { date: string; content: string }) => {
+            const res = await fetch('/api/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, content }),
+            });
+            if (!res.ok) throw new Error('Failed to save note');
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notes'] });
+        },
+    });
 
-    const getNoteForDate = (date: Date): Note | undefined => {
+    const deleteNoteMutation = useMutation({
+        mutationFn: async (date: string) => {
+            const res = await fetch(`/api/notes/${date}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Failed to delete note');
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['notes'] });
+        },
+    });
+
+    const getNoteForDate = useCallback((date: Date): Note | undefined => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        return notes.find(note => note.date === dateStr);
-    };
+        return notes.find((note: Note) => note.date === dateStr);
+    }, [notes]);
 
-    const saveNote = (date: Date, content: string) => {
+    const saveNote = useCallback((date: Date, content: string) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        const existingNote = getNoteForDate(date);
+        saveNoteMutation.mutate({ date: dateStr, content });
+    }, [saveNoteMutation]);
 
-        if (existingNote) {
-            // Update existing note
-            const updatedNotes = notes.map(note =>
-                note.id === existingNote.id
-                    ? { ...note, content, updatedAt: new Date() }
-                    : note
-            );
-            saveNotes(updatedNotes);
-        } else {
-            // Create new note
-            const newNote: Note = {
-                id: `note-${Date.now()}`,
-                date: dateStr,
-                content,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            saveNotes([...notes, newNote]);
-        }
-    };
-
-    const deleteNote = (date: Date) => {
+    const deleteNote = useCallback((date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        const updatedNotes = notes.filter(note => note.date !== dateStr);
-        saveNotes(updatedNotes);
-    };
+        deleteNoteMutation.mutate(dateStr);
+    }, [deleteNoteMutation]);
 
     return {
         notes,

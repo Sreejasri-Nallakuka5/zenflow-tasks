@@ -24,8 +24,29 @@ const categories = [
   { id: 'fun', label: 'Fun & Leisure', icon: Gamepad2, color: 'text-category-cyan' },
 ];
 
+import { useLanguage } from '@/contexts/LanguageContext';
+
 export function TasksView() {
+  const { t } = useLanguage();
   const { filteredTasks, filter, setFilter, addTask, toggleTask } = useTasks();
+
+  const filters: { id: TaskFilter; label: string }[] = [
+    { id: 'upcoming', label: t('today') }, // Reusing today or we should add 'upcoming'
+    { id: 'no-date', label: t('todos') },
+    { id: 'completed', label: t('done') },
+  ];
+
+  const categories = [
+    { id: 'none', label: 'None', icon: Star, color: 'text-category-green' },
+    { id: 'shopping', label: 'Shopping', icon: ShoppingCart, color: 'text-category-pink' },
+    { id: 'home', label: 'Home', icon: Home, color: 'text-category-orange' },
+    { id: 'work', label: 'Work', icon: Briefcase, color: 'text-category-yellow' },
+    { id: 'family', label: 'Family', icon: Heart, color: 'text-category-purple' },
+    { id: 'health', label: 'Health', icon: Activity, color: 'text-category-coral' },
+    { id: 'finances', label: 'Finances', icon: DollarSign, color: 'text-category-green' },
+    { id: 'fun', label: 'Fun & Leisure', icon: Gamepad2, color: 'text-category-cyan' },
+  ];
+
   const [showAddTask, setShowAddTask] = useState(false);
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -83,7 +104,7 @@ export function TasksView() {
             onClick={() => setShowCategoryFilter(!showCategoryFilter)}
             className="flex items-center gap-2 touch-feedback"
           >
-            <h1 className="text-3xl font-handwritten font-bold">All Tasks</h1>
+            <h1 className="text-3xl font-handwritten font-bold">{t('all_tasks')}</h1>
             <ChevronDown className={cn(
               "w-5 h-5 text-muted-foreground transition-transform",
               showCategoryFilter && "rotate-180"
@@ -93,7 +114,7 @@ export function TasksView() {
             onClick={handleEditToggle}
             className="text-foreground font-medium touch-feedback"
           >
-            {isEditMode ? 'Done' : 'Edit'}
+            {isEditMode ? t('done') : t('edit')}
           </button>
         </div>
 
@@ -106,7 +127,7 @@ export function TasksView() {
             >
               <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-2xl font-semibold">Filter by Category</h2>
+                  <h2 className="text-2xl font-semibold">{t('filter_by_category')}</h2>
                   <button
                     onClick={() => setShowCategoryFilter(false)}
                     className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center touch-feedback"
@@ -159,13 +180,13 @@ export function TasksView() {
                   onClick={deselectAll}
                   className="flex-1 py-3 rounded-xl bg-secondary text-foreground font-medium touch-feedback"
                 >
-                  Deselect All
+                  {t('deselect_all')}
                 </button>
                 <button
                   onClick={handleApplyFilters}
                   className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-medium touch-feedback"
                 >
-                  OK
+                  {t('ok')}
                 </button>
               </div>
             </div>
@@ -195,7 +216,7 @@ export function TasksView() {
         >
           <div className="w-8 border-t border-muted-foreground/30" />
           <span className="flex items-center gap-1">
-            Today
+            {t('today')}
             {isTodaySectionExpanded ? (
               <ChevronDown className="w-4 h-4 transition-transform" />
             ) : (
@@ -242,8 +263,8 @@ export function TasksView() {
 
         {categoryFilteredTasks.length === 0 && isTodaySectionExpanded && (
           <div className="text-center py-16 text-muted-foreground">
-            <p className="text-lg">No tasks found</p>
-            <p className="text-sm mt-2">Add a new task to get started</p>
+            <p className="text-lg">{t('no_tasks_found')}</p>
+            <p className="text-sm mt-2">{t('add_task_started')}</p>
           </div>
         )}
       </div>

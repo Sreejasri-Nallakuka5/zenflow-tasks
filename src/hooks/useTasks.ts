@@ -30,17 +30,14 @@ export function useTasks() {
     },
   });
 
-  const toggleTaskMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const task = tasks.find((t: Task) => t.id === id);
-      if (!task) throw new Error('Task not found');
-
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Task> }) => {
       const res = await fetch(`/api/tasks/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isCompleted: !task.isCompleted }),
+        body: JSON.stringify(updates),
       });
-      if (!res.ok) throw new Error('Failed to toggle task');
+      if (!res.ok) throw new Error('Failed to update task');
       return res.json();
     },
     onSuccess: () => {
@@ -60,17 +57,30 @@ export function useTasks() {
     },
   });
 
-  const addTask = useCallback((title: string, dueDate?: Date) => {
-    addTaskMutation.mutate({ title, dueDate });
+  const addTask = useCallback((title: string, dueDate?: Date, options: any = {}) => {
+    addTaskMutation.mutate({ title, dueDate, ...options });
   }, [addTaskMutation]);
 
   const toggleTask = useCallback((id: string) => {
-    toggleTaskMutation.mutate(id);
-  }, [toggleTaskMutation]);
+    const task = tasks.find((t: Task) => t.id === id);
+    if (task) {
+      updateTaskMutation.mutate({ id, updates: { isCompleted: !task.isCompleted } });
+    }
+  }, [tasks, updateTaskMutation]);
 
   const deleteTask = useCallback((id: string) => {
     deleteTaskMutation.mutate(id);
   }, [deleteTaskMutation]);
+
+  const postponeTask = useCallback((id: string) => {
+    const task = tasks.find((t: Task) => t.id === id);
+    if (task) {
+      const currentDue = task.dueDate ? new Date(task.dueDate) : new Date();
+      const nextDay = new Date(currentDue);
+      nextDay.setDate(nextDay.getDate() + 1);
+      updateTaskMutation.mutate({ id, updates: { dueDate: nextDay } });
+    }
+  }, [tasks, updateTaskMutation]);
 
   const filteredTasks = tasks.filter((task: Task) => {
     switch (filter) {
@@ -87,5 +97,5 @@ export function useTasks() {
 
   const pendingCount = tasks.filter((t: Task) => !t.isCompleted).length;
 
-  return { tasks, filteredTasks, filter, setFilter, addTask, toggleTask, deleteTask, pendingCount };
+  return { tasks, filteredTasks, filter, setFilter, addTask, toggleTask, deleteTask, postponeTask, pendingCount };
 }

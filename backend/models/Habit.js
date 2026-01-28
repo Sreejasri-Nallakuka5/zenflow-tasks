@@ -25,6 +25,11 @@ const habitSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    status: {
+        type: String,
+        enum: ['active', 'stopped'],
+        default: 'active',
+    },
     createdAt: {
         type: Date,
         default: Date.now,

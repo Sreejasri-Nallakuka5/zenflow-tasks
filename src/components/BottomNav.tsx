@@ -1,20 +1,23 @@
 import { Home, ListTodo, TrendingUp, Settings } from 'lucide-react';
 import { ViewType } from '@/types';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BottomNavProps {
   activeView: ViewType;
   onViewChange: (view: ViewType) => void;
 }
 
-const navItems: { id: ViewType; icon: any; label: string }[] = [
-  { id: 'home', icon: Home, label: 'Home' },
-  { id: 'tasks', icon: ListTodo, label: 'Tasks' },
-  { id: 'stats', icon: TrendingUp, label: 'Stats' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
-];
-
 export function BottomNav({ activeView, onViewChange }: BottomNavProps) {
+  const { t } = useLanguage();
+
+  const navItems: { id: ViewType; icon: any; label: string }[] = [
+    { id: 'home', label: t('home'), icon: Home },
+    { id: 'tasks', label: t('tasks'), icon: ListTodo },
+    { id: 'stats', label: t('stats'), icon: TrendingUp },
+    { id: 'settings', label: t('settings'), icon: Settings },
+  ];
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background/60 backdrop-blur-xl border-t border-border/10 safe-area-bottom z-50">
       <div className="flex items-center justify-around h-16 px-4">

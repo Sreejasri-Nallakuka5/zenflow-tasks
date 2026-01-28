@@ -21,6 +21,11 @@ exports.createTask = async (req, res) => {
         title: req.body.title,
         dueDate: req.body.dueDate,
         isCompleted: req.body.isCompleted || false,
+        priority: req.body.priority,
+        category: req.body.category,
+        reminder: req.body.reminder,
+        autoPostpone: req.body.autoPostpone,
+        subtasks: req.body.subtasks,
     });
 
     try {
@@ -40,6 +45,11 @@ exports.updateTask = async (req, res) => {
         if (req.body.title != null) task.title = req.body.title;
         if (req.body.isCompleted != null) task.isCompleted = req.body.isCompleted;
         if (req.body.dueDate != null) task.dueDate = req.body.dueDate;
+        if (req.body.priority != null) task.priority = req.body.priority;
+        if (req.body.category != null) task.category = req.body.category;
+        if (req.body.reminder != null) task.reminder = req.body.reminder;
+        if (req.body.autoPostpone != null) task.autoPostpone = req.body.autoPostpone;
+        if (req.body.subtasks != null) task.subtasks = req.body.subtasks;
 
         const updatedTask = await task.save();
         res.json({ ...updatedTask.toObject(), id: updatedTask._id.toString() });

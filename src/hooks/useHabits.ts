@@ -15,30 +15,39 @@ export function useHabits() {
   });
 
   const addHabitMutation = useMutation({
-    mutationFn: async (newHabit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount'>) => {
+    mutationFn: async (newHabit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount' | 'status'>) => {
       const res = await fetch('/api/habits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newHabit),
+        body: JSON.stringify({ ...newHabit, status: 'active' }),
       });
       if (!res.ok) throw new Error('Failed to add habit');
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['habits'] });
-      // toast({ title: "Habit added successfully" });
+    },
+  });
+
+  const updateHabitStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'active' | 'stopped' }) => {
+      const res = await fetch(`/api/habits/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error('Failed to update habit status');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
     },
   });
 
   const toggleHabitMutation = useMutation({
     mutationFn: async ({ id, direction }: { id: string; direction: 'up' | 'down' }) => {
-      // Optimistic update logic is complex here without endpoint refactor, 
-      // but we can try to reuse existing endpoint if it supports partial updates or creating a specific toggle endpoint.
-      // For now, let's assume updateHabit endpoint handles the logic or we calculate new values client side and send them.
-      // However, the backend updateHabit logic seems to just take fields.
-      // Let's implement a basic client-side calculation and send the update to the server.
       const habit = habits.find((h: Habit) => h.id === id);
       if (!habit) throw new Error("Habit not found");
 
@@ -78,8 +87,7 @@ export function useHabits() {
     },
   });
 
-
-  const addHabit = (habit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount'>) => {
+  const addHabit = (habit: Omit<Habit, 'id' | 'createdAt' | 'isCompleted' | 'currentCount' | 'status'>) => {
     addHabitMutation.mutate(habit);
   };
 
@@ -91,8 +99,14 @@ export function useHabits() {
     deleteHabitMutation.mutate(id);
   };
 
-  const totalPossibleTicks = habits.reduce((acc: number, h: Habit) => acc + (h.targetCount || 1), 0);
-  const currentTicks = habits.reduce((acc: number, h: Habit) => {
+  const updateHabitStatus = (id: string, status: 'active' | 'stopped') => {
+    updateHabitStatusMutation.mutate({ id, status });
+  };
+
+  const activeHabits = habits.filter((h: Habit) => h.status === 'active' || !h.status);
+
+  const totalPossibleTicks = activeHabits.reduce((acc: number, h: Habit) => acc + (h.targetCount || 1), 0);
+  const currentTicks = activeHabits.reduce((acc: number, h: Habit) => {
     if (h.targetCount !== undefined) return acc + (h.currentCount || 0);
     return acc + (h.isCompleted ? 1 : 0);
   }, 0);
@@ -101,5 +115,16 @@ export function useHabits() {
     ? Math.round((currentTicks / totalPossibleTicks) * 100)
     : 0;
 
-  return { habits, addHabit, toggleHabit, deleteHabit, progressPercent, currentTicks, totalPossibleTicks };
+  return {
+    habits,
+    activeHabits,
+    stoppedHabits: habits.filter((h: Habit) => h.status === 'stopped'),
+    addHabit,
+    toggleHabit,
+    deleteHabit,
+    updateHabitStatus,
+    progressPercent,
+    currentTicks,
+    totalPossibleTicks
+  };
 }

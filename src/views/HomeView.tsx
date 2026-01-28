@@ -15,7 +15,10 @@ import { useHabits } from '@/hooks/useHabits';
 import { useTasks } from '@/hooks/useTasks';
 import { cn } from '@/lib/utils';
 
+import { useLanguage } from '@/contexts/LanguageContext';
+
 export function HomeView() {
+  const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()));
   const [activeTab, setActiveTab] = useState<TabType>('habits');
   const [showAddHabit, setShowAddHabit] = useState(false);
@@ -60,7 +63,7 @@ export function HomeView() {
   const incompleteTasks = tasks.filter(t => !t.isCompleted);
 
   const displayTitle = isToday(selectedDate)
-    ? "Today"
+    ? t('today')
     : format(selectedDate, 'EEEE, d MMMM');
 
   return (
@@ -121,7 +124,7 @@ export function HomeView() {
                     ))}
                   </div>
 
-                  <AddButton onClick={() => setShowAddHabit(true)} label="Add new habit" />
+                  <AddButton onClick={() => setShowAddHabit(true)} label={t('add_new_habit')} />
                 </div>
               ) : (
                 <div className="animate-fade-in space-y-4">
@@ -135,7 +138,7 @@ export function HomeView() {
                     ))}
                   </div>
 
-                  <AddButton onClick={() => setShowAddTask(true)} label="Add new task" />
+                  <AddButton onClick={() => setShowAddTask(true)} label={t('add_new_task')} />
                 </div>
               )}
             </div>
