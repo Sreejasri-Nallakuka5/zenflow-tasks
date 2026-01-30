@@ -17,11 +17,18 @@ export function ProgressBar({ percent, className }: ProgressBarProps) {
   }, [percent]);
 
   return (
-    <div className={cn("w-full bg-secondary/50 rounded-full h-3 overflow-hidden", className)}>
-      <div
-        className="h-full bg-primary transition-all duration-1000 ease-out"
-        style={{ width: `${displayPercent}%` }}
-      />
+    <div className={cn("space-y-1.5", className)}>
+      <div className="w-full bg-secondary/30 rounded-full h-4 border-2 border-primary/20 p-0.5 overflow-hidden">
+        <div
+          className="h-full bg-primary/60 rounded-full transition-all duration-1000 ease-out"
+          style={{ width: `${displayPercent}%` }}
+        />
+      </div>
+      <div className="flex justify-end pr-1">
+        <span className="text-xs font-handwritten font-medium text-muted-foreground/80 tracking-wide">
+          {displayPercent}% achieved
+        </span>
+      </div>
     </div>
   );
 }

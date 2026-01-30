@@ -12,24 +12,17 @@ interface AddTaskModalProps {
 type Priority = 'None' | 'Low' | 'Medium' | 'High';
 type Category = 'None' | 'Smart Habits' | 'Popular Habits' | 'Morning Routine' | 'Health & Wellness' | 'Mental Health' | 'Better Sleep' | 'Personal Growth' | 'Productivity' | 'Sport' | 'Social Health';
 
-interface CategoryData {
-  id: Category;
-  label: string;
-  color: string;
-  image: string;
-}
-
-const categoriesData: CategoryData[] = [
-  { id: 'Smart Habits', label: 'Smart Habits', color: '#4ade80', image: '/characters/bird1.png' }, // Green
-  { id: 'Popular Habits', label: 'Popular Habits', color: '#a855f7', image: '/characters/bird2.png' }, // Purple
-  { id: 'Morning Routine', label: 'Morning Routine', color: '#3b82f6', image: '/characters/bird3.png' }, // Blue
-  { id: 'Health & Wellness', label: 'Health & Wellness', color: '#ef4444', image: '/characters/bird4.png' }, // Red
-  { id: 'Mental Health', label: 'Mental Health', color: '#eab308', image: '/characters/bird5.png' }, // Yellow
-  { id: 'Better Sleep', label: 'Better Sleep', color: '#94a3b8', image: '/characters/bird6.png' }, // Grey
-  { id: 'Personal Growth', label: 'Personal Growth', color: '#84cc16', image: '/characters/bird7.png' }, // Lime
-  { id: 'Productivity', label: 'Productivity', color: '#f97316', image: '/characters/bird8.png' }, // Orange
-  { id: 'Sport', label: 'Sport', color: '#0ea5e9', image: '/characters/bird9.png' }, // Light Blue
-  { id: 'Social Health', label: 'Social Health', color: '#ec4899', image: '/characters/bird10.png' }, // Pink
+const categoriesData: { id: Category; label: string; color: string }[] = [
+  { id: 'Smart Habits', label: 'Smart Habits', color: '#4ade80' },
+  { id: 'Popular Habits', label: 'Popular Habits', color: '#a855f7' },
+  { id: 'Morning Routine', label: 'Morning Routine', color: '#3b82f6' },
+  { id: 'Health & Wellness', label: 'Health & Wellness', color: '#ef4444' },
+  { id: 'Mental Health', label: 'Mental Health', color: '#eab308' },
+  { id: 'Better Sleep', label: 'Better Sleep', color: '#94a3b8' },
+  { id: 'Personal Growth', label: 'Personal Growth', color: '#84cc16' },
+  { id: 'Productivity', label: 'Productivity', color: '#f97316' },
+  { id: 'Sport', label: 'Sport', color: '#0ea5e9' },
+  { id: 'Social Health', label: 'Social Health', color: '#ec4899' },
 ];
 
 export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) {
@@ -297,8 +290,8 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
 
         {/* Small Centered Category Popup */}
         {showCategoryPopup && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-fade-in" onClick={() => setShowCategoryPopup(false)}>
-            <div className="bg-[#1a1a1a] rounded-[2rem] p-6 w-full max-w-md max-h-[85vh] overflow-y-auto animate-scale-in shadow-2xl border border-border/10 custom-scrollbar" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[100] flex items-center justify-center p-6 animate-fade-in" onClick={() => setShowCategoryPopup(false)}>
+            <div className="bg-background rounded-[2rem] p-6 w-full max-w-md max-h-[85vh] overflow-y-auto animate-scale-in shadow-2xl border border-border/10 custom-scrollbar" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6 flex-shrink-0">
                 <h3 className="text-xl font-bold text-foreground">
                   Pick a category
@@ -307,7 +300,7 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
-              <div className="flex flex-col gap-4 pr-1">
+              <div className="flex flex-col gap-3 pr-1">
                 {categoriesData.map(c => (
                   <button
                     key={c.id}
@@ -315,32 +308,22 @@ export function AddTaskModal({ isOpen, onClose, onAddTask }: AddTaskModalProps) 
                       setCategory(c.id);
                       setShowCategoryPopup(false);
                     }}
-                    style={{
-                      borderColor: c.color,
-                      color: c.color
-                    }}
                     className={cn(
-                      "group relative w-full h-[80px] rounded-2xl border-2 flex items-center justify-between px-6 overflow-hidden transition-all duration-300",
-                      category === c.id ? "bg-opacity-10" : "hover:bg-muted/5 bg-transparent"
+                      "group relative w-full h-[60px] rounded-2xl border-2 flex items-center justify-between px-6 overflow-hidden transition-all duration-300",
+                      category === c.id ? "border-primary bg-primary/5" : "border-muted-foreground/10 hover:border-primary/30"
                     )}
                   >
-                    {/* Background tint when selected */}
-                    {category === c.id && (
+                    <div className="flex items-center gap-3">
                       <div
-                        className="absolute inset-0 opacity-10"
+                        className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: c.color }}
                       />
-                    )}
-
-                    <span className="text-lg font-bold z-10 text-white">{c.label}</span>
-
-                    <div className="relative w-16 h-16 z-10 transform translate-x-2 group-hover:scale-110 transition-transform duration-300">
-                      <img
-                        src={c.image}
-                        alt={c.label}
-                        className="w-full h-full object-contain drop-shadow-lg"
-                      />
+                      <span className="text-lg font-bold text-foreground">{c.label}</span>
                     </div>
+
+                    {category === c.id && (
+                      <Check className="w-5 h-5 text-primary" />
+                    )}
                   </button>
                 ))}
               </div>

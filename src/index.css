@@ -27,15 +27,6 @@
     --ring: 270 50% 85%;
     --radius: 1rem;
 
-    /* Custom colors - Pastel palette */
-    --lavender: 270 50% 85%;
-    --lavender-light: 270 50% 92%;
-    --lavender-dark: 270 50% 75%;
-    --success: 142 40% 80%;
-    --success-light: 142 40% 88%;
-    --warning: 45 70% 85%;
-    --info: 200 60% 85%;
-
     /* Category colors - Pastel variants */
     --cat-green: 142 40% 80%;
     --cat-pink: 330 60% 88%;
@@ -43,38 +34,12 @@
     --cat-coral: 10 70% 85%;
     --cat-yellow: 50 70% 85%;
     --cat-orange: 30 70% 85%;
-    --cat-purple: 270 50% 85%;
-
-    --sidebar-background: 270 40% 95%;
-    --sidebar-foreground: 240 20% 25%;
-    --sidebar-primary: 270 50% 85%;
-    --sidebar-primary-foreground: 270 60% 30%;
-    --sidebar-accent: 260 40% 92%;
-    --sidebar-accent-foreground: 240 20% 25%;
-    --sidebar-border: 220 30% 88%;
-    --sidebar-ring: 270 50% 85%;
+    --cat-purple: 270 40% 85%;
   }
 
   .dark {
     --background: 30 40% 96%;
     --foreground: 240 20% 25%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 20% 25%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 20% 25%;
-    --primary: 270 50% 85%;
-    --primary-foreground: 270 60% 30%;
-    --secondary: 200 50% 90%;
-    --secondary-foreground: 200 60% 30%;
-    --muted: 210 40% 92%;
-    --muted-foreground: 240 10% 50%;
-    --accent: 330 60% 88%;
-    --accent-foreground: 330 70% 35%;
-    --destructive: 0 70% 88%;
-    --destructive-foreground: 0 70% 40%;
-    --border: 220 30% 88%;
-    --input: 220 30% 88%;
-    --ring: 270 50% 85%;
   }
 }
 
@@ -89,6 +54,8 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     overscroll-behavior: none;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 }
 
@@ -182,5 +149,17 @@
 
 .touch-feedback:active {
   transform: scale(0.97);
-  opacity: 0.9;
+  opacity: 0.85;
+}
+
+.card-sketchy {
+  background-color: hsl(var(--card));
+  border: 2px solid hsla(var(--border), 0.6);
+  border-radius: 1rem;
+  box-shadow: 4px 4px 0px hsla(var(--primary), 0.2);
+}
+
+.bg-dots {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1.5px, transparent 0);
+  background-size: 32px 32px;
 }

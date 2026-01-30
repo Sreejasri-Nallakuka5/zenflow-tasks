@@ -1,17 +1,26 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Check, Award } from 'lucide-react';
 import { Gauge } from '@/components/Gauge';
 import { StatsCard } from '@/components/StatsCard';
 import { NotesView } from '@/components/NotesView';
 import { cn } from '@/lib/utils';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, getDay, isSameDay } from 'date-fns';
-
+import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function StatsView() {
   const { t } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'activity' | 'notes'>('activity');
+
+  const { data: stats = { streak: 0, perfectDays: 0, activeDays: 0, overallRate: 0, activityData: {} } } = useQuery({
+    queryKey: ['stats'],
+    queryFn: async () => {
+      const res = await fetch('/api/stats');
+      if (!res.ok) throw new Error('Failed to fetch stats');
+      return res.json();
+    },
+  });
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -28,14 +37,8 @@ export function StatsView() {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1));
   };
 
-  // Mock activity data
-  const activityData: Record<string, number> = {
-    '2026-01-21': 60,
-    '2026-01-22': 85,
-    '2026-01-23': 100,
-  };
-
-  const overallRate = 44.9;
+  const activityData = stats.activityData || {};
+  const overallRate = stats.overallRate || 0;
 
   return (
     <div className="h-full pb-32 bg-background flex flex-col items-center p-6 pt-12 overflow-y-auto overflow-x-hidden">
@@ -44,11 +47,11 @@ export function StatsView() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-1 w-full mb-12 flex-shrink-0">
-        <StatsCard value={1} label={t('streak_days')} icon={<Check className="w-3 h-3 text-primary" />} />
+        <StatsCard value={stats.streak} label={t('streak_days')} icon={<Check className="w-3 h-3 text-primary" />} />
         <div className="w-px h-10 bg-border/30 self-center justify-self-center" />
-        <StatsCard value={1} label={t('perfect_days')} icon={<Award className="w-3 h-3 text-primary" />} />
+        <StatsCard value={stats.perfectDays} label={t('perfect_days')} icon={<Award className="w-3 h-3 text-primary" />} />
         <div className="w-px h-10 bg-border/30 self-center justify-self-center" />
-        <StatsCard value={3} label={t('active_days')} icon={<div className="w-3 h-3 bg-primary rounded-sm" />} />
+        <StatsCard value={stats.activeDays} label={t('active_days')} icon={<div className="w-3 h-3 bg-primary rounded-sm" />} />
       </div>
 
       <div className="w-full bg-card/30 rounded-[2.5rem] p-6 border border-border/20 flex-shrink-0 mb-8">

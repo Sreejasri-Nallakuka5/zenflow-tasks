@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Habit } from '@/types';
-// import { toast } from '@/components/ui/use-toast'; // Assuming you have a toast component
+import { format } from 'date-fns';
 
-export function useHabits() {
+export function useHabits(date: Date = new Date()) {
   const queryClient = useQueryClient();
+  const formattedDate = format(date, 'yyyy-MM-dd');
 
   const { data: habits = [] } = useQuery({
-    queryKey: ['habits'],
+    queryKey: ['habits', formattedDate],
     queryFn: async () => {
-      const res = await fetch('/api/habits');
+      const res = await fetch(`/api/habits?date=${formattedDate}`);
       if (!res.ok) throw new Error('Failed to fetch habits');
       return res.json();
     },
@@ -21,13 +22,13 @@ export function useHabits() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...newHabit, status: 'active' }),
+        body: JSON.stringify({ ...newHabit, status: 'active', date: formattedDate }),
       });
       if (!res.ok) throw new Error('Failed to add habit');
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habits', formattedDate] });
     },
   });
 
@@ -36,13 +37,26 @@ export function useHabits() {
       const res = await fetch(`/api/habits/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, date: formattedDate }),
       });
       if (!res.ok) throw new Error('Failed to update habit status');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['habits', formattedDate] });
+      const previousHabits = queryClient.getQueryData<Habit[]>(['habits', formattedDate]);
+      queryClient.setQueryData<Habit[]>(['habits', formattedDate], (old) =>
+        old?.map(habit => habit.id === id ? { ...habit, status } : habit)
+      );
+      return { previousHabits };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(['habits', formattedDate], context.previousHabits);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits', formattedDate] });
     },
   });
 
@@ -65,13 +79,43 @@ export function useHabits() {
       const res = await fetch(`/api/habits/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
+        body: JSON.stringify({ ...updates, date: formattedDate }),
       });
       if (!res.ok) throw new Error('Failed to update habit');
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    onMutate: async ({ id, direction }) => {
+      await queryClient.cancelQueries({ queryKey: ['habits', formattedDate] });
+      const previousHabits = queryClient.getQueryData<Habit[]>(['habits', formattedDate]);
+
+      queryClient.setQueryData<Habit[]>(['habits', formattedDate], (old) => {
+        return old?.map(habit => {
+          if (habit.id === id) {
+            let updates = {};
+            if (habit.targetCount !== undefined) {
+              const current = habit.currentCount || 0;
+              const newCount = direction === 'up'
+                ? Math.min(current + 1, habit.targetCount)
+                : Math.max(current - 1, 0);
+              updates = { currentCount: newCount, isCompleted: newCount >= habit.targetCount };
+            } else {
+              updates = { isCompleted: direction === 'up' ? !habit.isCompleted : false };
+            }
+            return { ...habit, ...updates };
+          }
+          return habit;
+        });
+      });
+
+      return { previousHabits };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(['habits', formattedDate], context.previousHabits);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits', formattedDate] });
     },
   });
 
@@ -82,8 +126,21 @@ export function useHabits() {
       });
       if (!res.ok) throw new Error('Failed to delete habit');
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['habits', formattedDate] });
+      const previousHabits = queryClient.getQueryData<Habit[]>(['habits', formattedDate]);
+      queryClient.setQueryData<Habit[]>(['habits', formattedDate], (old) =>
+        old?.filter(habit => habit.id !== id)
+      );
+      return { previousHabits };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(['habits', formattedDate], context.previousHabits);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits', formattedDate] });
     },
   });
 

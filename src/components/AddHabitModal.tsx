@@ -187,13 +187,16 @@ const categoryThemeColors: Record<string, string> = {
 
 export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [showCustomForm, setShowCustomForm] = useState(false);
   const [customTitle, setCustomTitle] = useState('');
   const [customEmoji, setCustomEmoji] = useState('✨');
 
   if (!isOpen) return null;
 
   const handleBack = () => {
-    if (selectedCategory) {
+    if (showCustomForm) {
+      setShowCustomForm(false);
+    } else if (selectedCategory) {
       setSelectedCategory(null);
     } else {
       onClose();
@@ -211,6 +214,7 @@ export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProp
 
   const handleClose = () => {
     setSelectedCategory(null);
+    setShowCustomForm(false);
     setCustomTitle('');
     setCustomEmoji('✨');
     onClose();
@@ -227,7 +231,7 @@ export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProp
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
           <h2 className="text-xl font-semibold">
-            {selectedCategory ? 'Pick a new one' : 'Pick a category'}
+            {showCustomForm ? 'Create custom habit' : selectedCategory ? 'Pick a new one' : 'Pick a category'}
           </h2>
           <button onClick={handleClose} className="touch-feedback p-2">
             <X className="w-6 h-6 text-foreground" />
@@ -235,7 +239,46 @@ export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProp
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar pb-32">
-          {selectedCategory ? (
+          {showCustomForm ? (
+            <div className="animate-fade-in space-y-6 pt-4">
+              <div className="bg-card p-6 rounded-3xl border-2 border-primary/20 shadow-sm transition-all focus-within:border-primary/50">
+                <p className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Habit Details</p>
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Icon</label>
+                      <input
+                        type="text"
+                        value={customEmoji}
+                        onChange={(e) => setCustomEmoji(e.target.value)}
+                        className="w-16 h-16 text-3xl text-center bg-secondary rounded-2xl border-none focus:ring-4 focus:ring-primary/20 transition-all"
+                        placeholder="✨"
+                        maxLength={2}
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Name</label>
+                      <input
+                        type="text"
+                        value={customTitle}
+                        onChange={(e) => setCustomTitle(e.target.value)}
+                        className="w-full h-16 px-6 bg-secondary rounded-2xl border-none focus:ring-4 focus:ring-primary/20 transition-all text-xl font-medium placeholder:text-muted-foreground/30"
+                        placeholder="e.g. Morning Jog"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                <p className="text-sm text-primary font-medium flex items-center gap-2">
+                  <Target className="w-4 h-4" />
+                  Tip: A clear name helps you stay focused!
+                </p>
+              </div>
+            </div>
+          ) : selectedCategory ? (
             <div className="animate-fade-in">
               <div className="relative mb-8 pt-4">
                 <div className="max-w-[70%]">
@@ -268,28 +311,7 @@ export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProp
               </div>
             </div>
           ) : (
-            <div className="space-y-4 animate-fade-in">
-              <div className="bg-card p-4 rounded-2xl border border-border/50 mb-6">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">Create Custom Habit</h3>
-                <div className="flex gap-3 items-center mb-4">
-                  <input
-                    type="text"
-                    value={customEmoji}
-                    onChange={(e) => setCustomEmoji(e.target.value)}
-                    className="w-12 h-12 text-2xl text-center bg-secondary rounded-xl border-none focus:ring-2 focus:ring-primary transition-all overflow-hidden"
-                    placeholder="✨"
-                    maxLength={2}
-                  />
-                  <input
-                    type="text"
-                    value={customTitle}
-                    onChange={(e) => setCustomTitle(e.target.value)}
-                    className="flex-1 h-12 px-4 bg-secondary rounded-xl border-none focus:ring-2 focus:ring-primary transition-all text-foreground"
-                    placeholder="Enter habit name..."
-                  />
-                </div>
-              </div>
-
+            <div className="space-y-4 animate-fade-in px-1">
               {categories.map((category) => (
                 <CategoryCard
                   key={category.id}
@@ -301,23 +323,34 @@ export function AddHabitModal({ isOpen, onClose, onAddHabit }: AddHabitModalProp
           )}
         </div>
 
-        {/* Highlighted "Create my own habit" at the bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent pt-12">
+        {/* Action Button at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent pt-12">
           <button
             onClick={() => {
-              if (customTitle.trim()) {
-                handleAddHabit(customEmoji || '✨', customTitle);
+              if (showCustomForm) {
+                if (customTitle.trim()) {
+                  handleAddHabit(customEmoji || '✨', customTitle);
+                }
+              } else {
+                setShowCustomForm(true);
               }
             }}
-            disabled={!customTitle.trim()}
+            disabled={showCustomForm && !customTitle.trim()}
             className={cn(
-              "w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all",
-              customTitle.trim()
-                ? "bg-primary text-primary-foreground touch-feedback active:scale-[0.98]"
-                : "bg-secondary text-muted-foreground cursor-not-allowed opacity-50"
+              "w-full py-5 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center justify-center gap-2",
+              (showCustomForm && !customTitle.trim())
+                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-50"
+                : "bg-primary text-primary-foreground touch-feedback active:scale-[0.98] hover:shadow-primary/20"
             )}
           >
-            Create my own habit
+            {showCustomForm ? (
+              <>
+                <Target className="w-5 h-5" />
+                <span>Create habit</span>
+              </>
+            ) : (
+              <span>Create my own habit</span>
+            )}
           </button>
         </div>
       </div>

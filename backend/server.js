@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -15,34 +16,54 @@ app.use(express.json());
 // Database Connection
 const connectDB = async () => {
     try {
-        console.log('Connecting to MongoDB...');
+        console.log('Attempting to connect to MongoDB...');
+        if (!process.env.MONGO_URI) {
+            throw new Error('MONGO_URI is not defined in environment variables');
+        }
         await mongoose.connect(process.env.MONGO_URI, {
-            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
         });
         console.log('MongoDB Connected Successfully');
     } catch (err) {
-        console.error('MongoDB connection error details:');
-        console.error('Code:', err.code);
-        console.error('Syscall:', err.syscall);
-        console.error('Hostname:', err.hostname);
-        console.error('Message:', err.message);
-        console.log('\nTIP: If you see ECONNREFUSED for an SRV record, it might be a DNS issue.');
-        console.log('Try using the standard connection string (non-SRV) from MongoDB Atlas.');
-        process.exit(1);
+        const errorDetails = {
+            message: err.message,
+            code: err.code,
+            syscall: err.syscall,
+            hostname: err.hostname,
+            stack: err.stack
+        };
+        fs.writeFileSync('startup_error.log', JSON.stringify(errorDetails, null, 2));
+        console.error('CRITICAL: MongoDB connection failed.');
+        console.error('Error Message:', err.message);
+        console.log('\nTIP: The server will CONTINUE to run, but API calls will fail until the database is connected.');
+        console.log('Check startup_error.log for full details.');
+
+        // Don't exit process, allow server to stay alive for Vite proxy
+        // process.exit(1); 
     }
 };
 
 connectDB();
 
 // Routes
-const habitRoutes = require('./routes/habitRoutes');
-const noteRoutes = require('./routes/noteRoutes');
-const taskRoutes = require('./routes/taskRoutes');
+// Routes
+try {
+    const habitRoutes = require('./routes/habitRoutes');
+    const noteRoutes = require('./routes/noteRoutes');
+    const taskRoutes = require('./routes/taskRoutes');
+    const statsRoutes = require('./routes/statsRoutes');
 
-app.use('/api/habits', habitRoutes);
-app.use('/api/notes', noteRoutes);
-app.use('/api/tasks', taskRoutes);
+    app.use('/api/habits', habitRoutes);
+    app.use('/api/notes', noteRoutes);
+    app.use('/api/tasks', taskRoutes);
+    app.use('/api/stats', statsRoutes);
+} catch (error) {
+    const fs = require('fs');
+    fs.writeFileSync('startup_error.log', 'Require Loop Error:\n' + error.stack);
+    console.error('Require Loop Error:', error);
+    process.exit(1);
+}
 
 app.get('/', (req, res) => {
     res.send('Zenflow Backend is running');
